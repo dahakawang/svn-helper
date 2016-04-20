@@ -47,6 +47,7 @@ class App(Application):
     def main(self):
         ret,file = system("svn log")
         if (ret != 0):
+            print file.read()
             raise RuntimeError("svn log failed to invoke")
         commits = self.parse(file)
         for c in commits:
