@@ -3,6 +3,7 @@
 import types
 from subprocess import call
 from tempfile import NamedTemporaryFile
+from abx import ABCMeta, abstractmethod
 
 class STYLE:
     NORMAL = "NORMAL"
@@ -91,3 +92,16 @@ def system(cmd):
     ret = call(cmd, shell = True, stdout = file, stderr = file)
     file.seek(0)
     return (ret, file)
+
+class Application:
+    __metaclass__ = ABCMeta
+
+    def run():
+        try:
+            main()
+        except Exception, e:
+            print(ColoredText.str("[ERROR]", ANSICOLOR.RED), str(e))
+
+    @abstractmethod
+    def main():
+        pass
