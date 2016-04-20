@@ -1,0 +1,12 @@
+#!/usr/bin/env python
+
+from common import system
+from common import ColoredText
+from common import Application
+
+class App(Application):
+    def main():
+        ret,file = system("svn log")
+
+app = App()
+app.run()
