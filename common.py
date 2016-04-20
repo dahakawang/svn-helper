@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import types
+import sys
 from subprocess import call
 from tempfile import NamedTemporaryFile
 from abc import ABCMeta, abstractmethod
@@ -74,12 +75,12 @@ class ColoredText:
     @classmethod
     def reset(clazz):
         clazz._current_text = _normal_text()
-        print(clazz._current_text)
+        sys.stdout.write(clazz._current_text)
 
     @classmethod
     def setup(clazz, color, style = STYLE.NORMAL):
         clazz._current_text = _color_text(color, style)
-        print(clazz._current_text)
+        sys.stdout.write(clazz._current_text)
 
     @classmethod
     def str(clazz, msg, color, style = STYLE.NORMAL):
