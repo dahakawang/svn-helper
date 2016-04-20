@@ -1,12 +1,57 @@
 #!/usr/bin/env python
+# coding=utf-8
 
 from common import system
 from common import ColoredText
+from common import ANSICOLOR
 from common import Application
+from datetime import datetime
+
+
+class Commit:
+    def __init__(self, header, comment):
+        self.comment = comment.strip()
+        headers = header.split("|")
+        if (len(headers) != 4):
+            raise RuntimeError("the svn log seems wrong")
+
+        self.ref = headers[0].strip()
+        self.author = headers[1].strip()
+        self.date = self.parse_date(headers[2].strip())
+
+    def parse_date(self, date):
+        component = date.split(" ")
+        if (len(component) != 7):
+            raise RuntimeError("the svn log seems wrong")
+        return datetime.strptime(component[0] + " " + component[1], "%Y-%m-%d %H:%M:%S")
+
+    def __str__(self):
+        return ColoredText.str(self.ref, ANSICOLOR.RED) + " ║ " + self.author + " │ " + str(self.date) + " │ " + self.comment
+
 
 class App(Application):
+    def parse(self, file):
+        lines = file.readlines()
+        if (len(lines) % 5 != 0):
+            raise RuntimeError("the svn log seems wrong")
+
+        commits = []
+        num = len(lines) / 5;
+        for i in range(num):
+            if not lines[i*5].startswith("----"):
+                raise RuntimeError("the svn log seems wrong")
+            commits.append(Commit(lines[i*5 + 1], lines[i*5 + 3]))
+        return commits
+
+
     def main(self):
         ret,file = system("svn log")
+        if (ret != 0):
+            raise RuntimeError("svn log failed to invoke")
+        commits = self.parse(file)
+        for c in commits:
+            print c
+        file.close()
 
 app = App()
 app.run()
