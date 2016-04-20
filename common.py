@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 import types
+from subprocess import call
+from tempfile import NamedTemporaryFile
 
 class STYLE:
     NORMAL = "NORMAL"
@@ -83,3 +85,9 @@ class ColoredText:
         return _color_text(color, style) + msg + clazz._current_text;
 
 ColoredText.reset()
+
+def system(cmd):
+    file = NamedTemporaryFile()
+    ret = call(cmd, shell = True, stdout = file, stderr = file)
+    file.seek(0)
+    return (ret, file)
