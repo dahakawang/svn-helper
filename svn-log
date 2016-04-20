@@ -5,7 +5,7 @@ from common import ColoredText
 from common import Application
 
 class App(Application):
-    def main():
+    def main(self):
         ret,file = system("svn log")
 
 app = App()
