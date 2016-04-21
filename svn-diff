@@ -5,8 +5,10 @@ from common import system
 from common import ColoredText
 from common import ANSICOLOR
 from common import Application
+from common import Node
 from datetime import datetime
 import sys
+import os
 
 class App(Application):
     def print_help(self):
@@ -19,26 +21,81 @@ class App(Application):
             sys.exit(1)
         return revisions[0], revisions[1]
 
+    def remove_empty(self, lines):
+        return [line for line in lines if line.strip() != ""]
+
+    def parse_diff_filelist(self, lines):
+        lines = self.remove_empty(lines)
+        files = []
+        for line in lines:
+            t = line.split()
+            if len(t) != 2:
+                raise RuntimeError("the svn diff seems wrong (file list)")
+                sys.exit(1)
+            files.append((t[0].strip(), t[1].strip()))
+        return files
+
+
     def get_diff_filelist(self, r1, r2):
         cmd = "svn diff --revision " + r1 + ":" + r2 + " --summarize"
         ret,file = system(cmd)
         if ret != 0:
             print file.read()
             raise RuntimeError("svn diff failed to invoke")
-        print file.read()
+        lines = file.readlines()
+        return self.parse_diff_filelist(lines)
+
+    def get_child(self, root, name):
+        for node in root.children:
+            if (node.name == name):
+                return node
+
+        node = Node(name)
+        root.children.append(node)
+        return node
+
+    def add_node(self, root, file):
+        mode = file[0]
+        filenames = file[1].split("/")
+
+        for i in range(len(filenames)):
+            if (i < len(filenames) - 1):
+                root = self.get_child(root, filenames[i])
+            else:
+                node = Node( " " + ColoredText.str(mode, ANSICOLOR.RED)+ " " + file[1])
+                root.children.append(node)
+            
+
+    def build_tree(self, files):
+        root = Node(os.getcwd())
+        for file in files:
+            self.add_node(root, file)
+        return root
+
+    def list_diff_files(self, r1, r2):
+        files = self.get_diff_filelist(r1, r2);
+        node_tree = self.build_tree(files)
+        print node_tree.str()
 
     def parse_argument(self):
         if len(sys.argv) <= 1 or len(sys.argv) > 3:
             raise RuntimeError("wrong number of arguments")
             sys.exit(1)
-        r1, r2 = self.get_revisions(sys.argv[1])
+        self.r1, self.r2 = self.get_revisions(sys.argv[1])
         if len(sys.argv) == 2:
-            self.get_diff_filelist(r1, r2)
+            self.mode = "list-file"
         else:
-            filename = sys.argv[2]
+            self.file = sys.argv[2]
+            self.mode = "compare-file"
+        
 
     def main(self):
         self.parse_argument()
+
+        if self.mode == "list-file":
+            self.list_diff_files(self.r1, self.r2)
+        elif self.mode == "compare-file":
+            filename = sys.argv[2]
 
 
 app = App()
