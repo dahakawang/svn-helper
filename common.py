@@ -111,11 +111,11 @@ class Application:
 class Node:
     def __init__(self, name = None, desc = None):
         self.name = name
-        self.desc = desc
         self.children = []
 
     def _serialize(self, lastones):
         str = ""
+        self.children = sorted(self.children, key=lambda x: x.name)
         level = len(lastones)
         if level > 0:
             for i in range(level - 1):
@@ -140,6 +140,7 @@ class Node:
 
     def str(self):
         ret = ""
+        self.children = sorted(self.children, key=lambda x: x.name)
         if self.name != None  and self.name != "":
             ret += self.name
             for i in range(len(self.children)):
