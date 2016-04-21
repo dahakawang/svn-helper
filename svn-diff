@@ -1,0 +1,45 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+from common import system
+from common import ColoredText
+from common import ANSICOLOR
+from common import Application
+from datetime import datetime
+import sys
+
+class App(Application):
+    def print_help(self):
+        print "Usage: svn-diff revision1:revision2 [file]"
+
+    def get_revisions(self, rev_str):
+        revisions = rev_str.split(":")
+        if len(revisions) != 2:
+            raise RuntimeError("wrong revision format (should be like revision1:revision2) ")
+            sys.exit(1)
+        return revisions[0], revisions[1]
+
+    def get_diff_filelist(self, r1, r2):
+        cmd = "svn diff --revision " + r1 + ":" + r2 + " --summarize"
+        ret,file = system(cmd)
+        if ret != 0:
+            print file.read()
+            raise RuntimeError("svn diff failed to invoke")
+        print file.read()
+
+    def parse_argument(self):
+        if len(sys.argv) <= 1 or len(sys.argv) > 3:
+            raise RuntimeError("wrong number of arguments")
+            sys.exit(1)
+        r1, r2 = self.get_revisions(sys.argv[1])
+        if len(sys.argv) == 2:
+            self.get_diff_filelist(r1, r2)
+        else:
+            filename = sys.argv[2]
+
+    def main(self):
+        self.parse_argument()
+
+
+app = App()
+app.run()
