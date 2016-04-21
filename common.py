@@ -107,3 +107,53 @@ class Application:
     @abstractmethod
     def main(self):
         pass
+
+class Node:
+    def __init__(self, name = None, desc = None):
+        self.name = name
+        self.desc = desc
+        self.children = []
+
+    def _serialize(self, lastones):
+        str = ""
+        level = len(lastones)
+        if level > 0:
+            for i in range(level - 1):
+                if lastones[i]:
+                    str += "  "
+                else:
+                    str += " │"
+            if lastones[-1]:
+                str += " └─"
+            else:
+                str += " ├─"
+        str += self.name
+
+        for i in range(len(self.children)):
+            str += "\n"
+            if i == len(self.children) - 1:
+                str += self.children[i]._serialize(lastones + [True])
+            else:
+                str += self.children[i]._serialize(lastones + [False])
+
+        return str
+
+    def str(self):
+        ret = ""
+        if self.name != None  and self.name != "":
+            ret += self.name
+            for i in range(len(self.children)):
+                ret += "\n"
+                if i == len(self.children) - 1:
+                    ret += self.children[i]._serialize([True])
+                else:
+                    ret += self.children[i]._serialize([False])
+        else:
+            for i in range(len(self.children)):
+                if i != 0:
+                    ret += "\n"
+                if i == len(self.children) - 1:
+                    ret += self.children[i]._serialize([])
+                else:
+                    ret += self.children[i]._serialize([])
+        return ret
