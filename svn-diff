@@ -43,6 +43,7 @@ class App(Application):
             print file.read()
             raise RuntimeError("svn diff failed to invoke")
         lines = file.readlines()
+        file.close()
         return self.parse_diff_filelist(lines)
 
     def get_child(self, root, name):
@@ -88,6 +89,12 @@ class App(Application):
             self.file = sys.argv[2]
             self.mode = "compare-file"
         
+    def invoke_diff(self, file, r1, r2):
+        cmd = "svn diff --revision " + r1 + ":" + r2 + " " + file + " --diff-cmd " + os.path.dirname(os.path.realpath(__file__)) + "/invoke_vimdiff"
+        ret = system(cmd, False)
+        if ret != 0:
+            raise RuntimeError("failed to invoke vimdiff")
+
 
     def main(self):
         self.parse_argument()
@@ -95,7 +102,7 @@ class App(Application):
         if self.mode == "list-file":
             self.list_diff_files(self.r1, self.r2)
         elif self.mode == "compare-file":
-            filename = sys.argv[2]
+            self.invoke_diff(self.file, self.r1, self.r2)
 
 
 app = App()
