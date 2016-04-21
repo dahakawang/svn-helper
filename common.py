@@ -89,11 +89,15 @@ class ColoredText:
 
 ColoredText.reset()
 
-def system(cmd):
-    file = NamedTemporaryFile()
-    ret = call(cmd, shell = True, stdout = file, stderr = file)
-    file.seek(0)
-    return (ret, file)
+def system(cmd, rediret= True):
+    if rediret:
+        file = NamedTemporaryFile()
+        ret = call(cmd, shell = True, stdout = file, stderr = file)
+        file.seek(0)
+        return (ret, file)
+    else:
+        ret = call(cmd, shell = True)
+        return ret
 
 class Application:
     __metaclass__ = ABCMeta
